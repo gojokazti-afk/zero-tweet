@@ -3,237 +3,200 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zero tweet</title>
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: #15151d;
-  color: #f1f1f7;
-  font-family: "Segoe UI", "Meiryo", sans-serif;
-}
-.layout {
-  display: grid;
-  grid-template-columns: 220px minmax(300px, 680px) 260px;
-  justify-content: center;
-  min-height: 100vh;
-}
-.sidebar, .trends {
-  padding: 24px 16px;
-  border-right: 1px solid #30303b;
-}
-.trends {
-  border-right: none;
-  border-left: 1px solid #30303b;
-}
-.logo {
-  font-size: 25px;
-  font-weight: 800;
-  color: #7c83ff;
-  margin-bottom: 35px;
-}
-.nav {
-  display: block;
-  padding: 13px;
-  margin: 5px 0;
-  color: #eeeef5;
-  text-decoration: none;
-  border-radius: 12px;
-  font-size: 16px;
-}
-.nav:hover { background: #292938; }
-main { border-right: 1px solid #30303b; min-width: 0; }
-h2 {
-  padding: 20px;
-  margin: 0;
-  border-bottom: 1px solid #30303b;
-}
-.composer { padding: 20px; border-bottom: 1px solid #30303b; }
-textarea {
-  width: 100%;
-  min-height: 100px;
-  resize: vertical;
-  background: #1c1c27;
-  color: white;
-  border: 1px solid #414154;
-  border-radius: 12px;
-  padding: 14px;
-  font: inherit;
-}
-button {
-  background: #6268f5;
-  color: white;
-  border: 0;
-  border-radius: 20px;
-  padding: 10px 22px;
-  cursor: pointer;
-  font-weight: bold;
-}
-button:hover { background: #777cff; }
-.post-button { display: flex; justify-content: flex-end; margin-top: 12px; }
-.post {
-  padding: 20px;
-  border-bottom: 1px solid #30303b;
-  overflow-wrap: anywhere;
-}
-.post-name { color: #a5a9ff; font-weight: bold; margin-bottom: 10px; }
-.post-text { white-space: pre-wrap; line-height: 1.7; }
-.post-time { color: #9999ad; font-size: 12px; margin-top: 10px; }
-.trend {
-  background: #20202b;
-  border-radius: 12px;
-  padding: 14px;
-  margin: 12px 0;
-  color: #d5d5e5;
-}
-.muted { color: #9999ad; font-size: 13px; }
-@media (max-width: 900px) {
-  .layout { grid-template-columns: 75px minmax(0, 680px); }
-  .sidebar { padding: 16px 8px; }
-  .logo { font-size: 13px; overflow-wrap: anywhere; }
-  .nav { padding: 12px 4px; font-size: 12px; text-align: center; }
-  .trends { display: none; }
-}
-@media (max-width: 480px) {
-  .layout { grid-template-columns: 60px minmax(0, 1fr); }
-  .nav { font-size: 11px; }
-  .composer, .post { padding: 14px; }
-}
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#101318;color:#e8eaf0;font-family:Arial,"Meiryo",sans-serif}
+header{position:sticky;top:0;background:#101318ee;border-bottom:1px solid #303640;padding:18px max(16px,calc((100% - 700px)/2));z-index:1}
+h1{font-size:23px;margin:0}
+main{max-width:700px;margin:auto;padding:20px 14px}
+.panel,.post{border:1px solid #303640;border-radius:14px;padding:16px;margin-bottom:16px;background:#171b22}
+textarea{width:100%;min-height:105px;resize:vertical;background:#101318;color:#fff;border:1px solid #454d5b;border-radius:9px;padding:12px;font:inherit}
+button{background:#8bb7ff;color:#101318;border:0;border-radius:8px;padding:10px 15px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.muted{color:#9da7b7;font-size:13px}
+.post-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;margin:14px 0}
+.delete{background:transparent;color:#ff9b9b;border:1px solid #754747}
+#status{margin:12px 0;color:#b9c9e5;font-size:14px}
 </style>
 </head>
 <body>
-<div class="layout">
-  <aside class="sidebar">
-    <div class="logo">Zero tweet</div>
-    <a class="nav" href="#">ホーム</a>
-    <a class="nav" href="#search">検索</a>
-    <a class="nav" href="#feed">タイムライン</a>
-    <a class="nav" href="#vc">VC（準備中）</a>
-    <a class="nav" href="#profile">プロフィール</a>
-    <p class="muted">自分のSNSを作ろう。</p>
-  </aside>
-
-  <main>
-    <h2>ホーム</h2>
-    <section class="composer">
-      <p>いまどうしてる？</p>
-      <textarea id="postInput" maxlength="500"
-        placeholder="ここに投稿内容を入力（500文字まで）"></textarea>
-      <div class="post-button">
-        <button id="postButton">投稿する</button>
-      </div>
-      <p id="status" class="muted" aria-live="polite"></p>
-    </section>
-    <section id="feed"></section>
-  </main>
-
-  <aside class="trends" id="search">
-    <h3>検索</h3>
-    <input id="searchInput" type="search" placeholder="投稿を検索"
-      style="width:100%;padding:10px;border-radius:8px;background:#20202b;color:white;border:1px solid #414154">
-    <h3>トレンド</h3>
-    <div class="trend"># ZeroTweet</div>
-    <div class="trend"># はじめまして</div>
-    <div class="trend"># 今日の出来事</div>
-    <p class="muted">Zero tweet</p>
-  </aside>
-</div>
-
+<header><h1>Zero tweet</h1></header>
+<main>
+  <section class="panel">
+    <div class="muted">みんなのタイムラインに投稿</div>
+    <textarea id="body" maxlength="500" placeholder="今なにしてる？"></textarea>
+    <div class="row">
+      <span id="count" class="muted">0 / 500</span>
+      <button id="send" disabled>投稿する</button>
+    </div>
+    <div id="status">データベースに接続しています…</div>
+  </section>
+  <section>
+    <div class="row" style="margin-bottom:14px">
+      <h2 style="font-size:18px;margin:0">タイムライン</h2>
+      <button id="refresh" style="background:#303947;color:#fff">更新</button>
+    </div>
+    <div id="timeline"></div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function () {
-  const STORAGE_KEY = "zero-tweet-posts-v1";
-  const input = document.getElementById("postInput");
-  const feed = document.getElementById("feed");
-  const status = document.getElementById("status");
-  const searchInput = document.getElementById("searchInput");
-  let posts = [];
+const SUPABASE_URL = "https://pgmpicnzfrkbogkebjbg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Hr0zhCURXyl9BZpRZmJBQQ_JMf3O84f";
 
-  function loadPosts() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      posts = saved ? JSON.parse(saved) : [];
-      if (!Array.isArray(posts)) posts = [];
-    } catch (error) {
-      posts = [];
-      status.textContent = "保存データを読み込めませんでした。";
+const client = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+let currentUser = null;
+const bodyInput = document.getElementById("body");
+const sendButton = document.getElementById("send");
+const statusBox = document.getElementById("status");
+const timeline = document.getElementById("timeline");
+
+function setStatus(message) {
+  statusBox.textContent = message;
+}
+
+bodyInput.addEventListener("input", () => {
+  document.getElementById("count").textContent =
+    bodyInput.value.length + " / 500";
+});
+
+async function start() {
+  try {
+    const { data: sessionData, error: sessionError } =
+      await client.auth.getSession();
+    if (sessionError) throw sessionError;
+
+    let session = sessionData.session;
+    if (!session) {
+      const { data, error } = await client.auth.signInAnonymously();
+      if (error) throw error;
+      session = data.session;
     }
+
+    if (!session) throw new Error("ログイン情報を取得できませんでした。");
+    currentUser = session.user;
+    sendButton.disabled = false;
+    setStatus("接続しました。投稿できます。");
+    await loadPosts();
+  } catch (error) {
+    console.error(error);
+    setStatus("接続できませんでした：" + error.message);
+  }
+}
+
+async function loadPosts() {
+  timeline.replaceChildren();
+  const loading = document.createElement("p");
+  loading.className = "muted";
+  loading.textContent = "読み込み中…";
+  timeline.append(loading);
+
+  const { data, error } = await client
+    .from("posts")
+    .select("id, created_at, body, user_id")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    timeline.replaceChildren();
+    setStatus("投稿を読み込めません：" + error.message);
+    return;
   }
 
-  function savePosts() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-      status.textContent = "投稿を保存しました。";
-      return true;
-    } catch (error) {
-      status.textContent = "保存できません。ブラウザの設定を確認してください。";
-      return false;
-    }
+  timeline.replaceChildren();
+  if (!data.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "まだ投稿はありません。最初の投稿をしてみよう。";
+    timeline.append(empty);
+    return;
   }
 
-  function renderPosts() {
-    const query = searchInput.value.trim().toLowerCase();
-    feed.replaceChildren();
+  for (const post of data) {
+    const card = document.createElement("article");
+    card.className = "post";
 
-    const visiblePosts = posts.filter(function (post) {
-      return String(post.text).toLowerCase().includes(query);
-    });
+    const meta = document.createElement("div");
+    meta.className = "muted";
+    const date = new Date(post.created_at);
+    meta.textContent = date.toLocaleString("ja-JP");
 
-    if (visiblePosts.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "post muted";
-      empty.textContent = query ? "一致する投稿はありません。" : "まだ投稿はありません。";
-      feed.appendChild(empty);
-      return;
+    const message = document.createElement("div");
+    message.className = "post-body";
+    message.textContent = post.body;
+
+    card.append(meta, message);
+
+    if (post.user_id === currentUser.id) {
+      const row = document.createElement("div");
+      row.className = "row";
+      const own = document.createElement("span");
+      own.className = "muted";
+      own.textContent = "自分の投稿";
+
+      const remove = document.createElement("button");
+      remove.className = "delete";
+      remove.textContent = "削除";
+      remove.addEventListener("click", async () => {
+        if (!confirm("この投稿を削除しますか？")) return;
+        remove.disabled = true;
+        const { error: deleteError } = await client
+          .from("posts")
+          .delete()
+          .eq("id", post.id)
+          .eq("user_id", currentUser.id);
+
+        if (deleteError) {
+          alert("削除できませんでした：" + deleteError.message);
+          remove.disabled = false;
+          return;
+        }
+        await loadPosts();
+      });
+
+      row.append(own, remove);
+      card.append(row);
     }
 
-    visiblePosts.forEach(function (post) {
-      const article = document.createElement("article");
-      article.className = "post";
-
-      const name = document.createElement("div");
-      name.className = "post-name";
-      name.textContent = "ゲスト　@guest";
-
-      const content = document.createElement("div");
-      content.className = "post-text";
-      content.textContent = post.text;
-
-      const time = document.createElement("div");
-      time.className = "post-time";
-      time.textContent = new Date(post.createdAt).toLocaleString("ja-JP");
-
-      article.append(name, content, time);
-      feed.appendChild(article);
-    });
+    timeline.append(card);
   }
+}
 
-  document.getElementById("postButton").addEventListener("click", function () {
-    const text = input.value.trim();
-    if (!text) {
-      status.textContent = "投稿内容を入力してください。";
-      return;
-    }
+sendButton.addEventListener("click", async () => {
+  const message = bodyInput.value.trim();
+  if (!message || !currentUser) return;
 
-    posts.unshift({
-      text: text,
-      createdAt: new Date().toISOString()
+  sendButton.disabled = true;
+  setStatus("投稿しています…");
+
+  try {
+    const { error } = await client.from("posts").insert({
+      body: message,
+      user_id: currentUser.id
     });
+    if (error) throw error;
 
-    if (!savePosts()) {
-      posts.shift();
-      return;
-    }
+    bodyInput.value = "";
+    document.getElementById("count").textContent = "0 / 500";
+    setStatus("投稿しました。");
+    await loadPosts();
+  } catch (error) {
+    setStatus("投稿できませんでした：" + error.message);
+  } finally {
+    sendButton.disabled = false;
+  }
+});
 
-    input.value = "";
-    renderPosts();
-  });
-
-  searchInput.addEventListener("input", renderPosts);
-
-  loadPosts();
-  renderPosts();
-})();
+document.getElementById("refresh").addEventListener("click", loadPosts);
+start();
 </script>
 </body>
 </html>
